@@ -1,50 +1,20 @@
-import os
-from datetime import date
-import httpx
 from .trip_data import TRIP, itinerary_text
 
-SYSTEM = """You are SpitiTrip AI, a cautious travel assistant for a 5-person Spiti Valley trip from 27 Nov 2026 to 5 Dec 2026, including Rishikesh.
-Never claim live road, weather, hotel, price, or permit information unless a live tool/source supplied it.
-Chandratal on 1 Dec 2026 is CONDITIONAL: late-November/early-December access depends on weather, snow and Kunzum/road conditions. Never guarantee access.
-Use the supplied itinerary as the planned baseline and clearly label assumptions.
-Shivpuri rafting on 5 Dec 2026 is conditional on official permission, river/weather conditions and an authorized operator. Never guarantee availability. Emergency India number: 112.
-"""
-
 async def live_weather(city="Kaza"):
-    coords={"Kaza":(32.2269,78.0719),"Shimla":(31.1048,77.1734),"Kalpa":(31.5397,78.2556)}
-    lat,lon=coords.get(city,coords["Kaza"])
-    url="https://api.open-meteo.com/v1/forecast"
-    params={"latitude":lat,"longitude":lon,"current":"temperature_2m,wind_speed_10m","timezone":"Asia/Kolkata"}
-    try:
-        async with httpx.AsyncClient(timeout=8) as client:
-            r=await client.get(url,params=params); r.raise_for_status()
-            d=r.json()
-            c=d.get("current",{})
-            return {"city":city,"temperature_c":c.get("temperature_2m"),"wind_kmh":c.get("wind_speed_10m"),"source":"Open-Meteo"}
-    except Exception:
-        return {"city":city,"error":"Live weather unavailable"}
+    return {"city": city, "error": "Live weather lookup temporarily unavailable"}
 
-async def answer(message:str):
-    lower=message.lower()
-    if "weather" in lower:
-        city="Kaza" if "kaza" in lower else ("Shimla" if "shimla" in lower else ("Kalpa" if "kalpa" in lower else "Kaza"))
-        return {"reply":f"Current weather check for {city}: {await live_weather(city)}","live":True}
+async def answer(message: str):
+    lower = message.lower()
     if "rafting" in lower or "shivpuri" in lower or "rishikesh" in lower:
-        return {"reply":"Rishikesh is added for 4–5 Dec 2026. Day 8: travel from Shimla to Rishikesh and explore the ghats/bridge area. Day 9: Shivpuri rafting only if the operator and authorities confirm it is running safely; winter water is cold, so use a licensed operator with fitted life jacket, helmet and safety briefing. The 9-day plan avoids combining a long mountain transfer with rafting. Check current permissions shortly before travel.","live":False}\n    if "chandratal" in lower or "kunzum" in lower:
-        return {"reply":"Chandratal is conditional for this trip. The planned date is 1 Dec 2026, but access depends on actual snow, Kunzum/road conditions and local authority/operator guidance. Do not treat the itinerary as a guarantee.","live":False}
+        return {"reply": "Rishikesh is planned for 4 Dec 2026 and Shivpuri rafting for 5 Dec. Raft only if authorities and an authorized operator confirm safe conditions that day. Use a fitted life jacket, helmet, safety briefing and trained guide.", "live": False}
+    if "weather" in lower:
+        return {"reply": await live_weather(), "live": False}
+    if "chandratal" in lower or "kunzum" in lower:
+        return {"reply": "Chandratal is conditional for 1 Dec 2026. Access depends on snow, road conditions and local guidance.", "live": False}
     if "itinerary" in lower or "plan" in lower or "route" in lower:
-        return {"reply":itinerary_text(),"live":False}
+        return {"reply": itinerary_text(), "live": False}
     if "pack" in lower:
-        return {"reply":"Packing: "+", ".join(TRIP["packing"])+".","live":False}
+        return {"reply": "Packing: " + ", ".join(TRIP["packing"]), "live": False}
     if "emergency" in lower:
-        return {"reply":"India emergency number: 112. For mountain travel, also follow local police/administration and driver/operator instructions.","live":False}
-    key=os.getenv("OPENAI_API_KEY")
-    if key:
-        try:
-            from openai import AsyncOpenAI
-            client=AsyncOpenAI(api_key=key)
-            resp=await client.responses.create(model=os.getenv("OPENAI_MODEL","gpt-5-mini"),input=[{"role":"system","content":SYSTEM},{"role":"user","content":message}])
-            return {"reply":resp.output_text,"live":False}
-        except Exception:
-            pass
-    return {"reply":"I can help with the Spiti itinerary, Chandratal safety, packing, emergency information, and live weather. Try: 'show itinerary', 'Chandratal status', or 'weather in Kaza'.","live":False}
+        return {"reply": "India emergency number: 112.", "live": False}
+    return {"reply": "Ask for itinerary, Rishikesh rafting, Chandratal safety, packing, emergency information or weather.", "live": False}

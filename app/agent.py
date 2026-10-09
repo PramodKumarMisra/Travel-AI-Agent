@@ -29,7 +29,8 @@ async def answer(message:str):
     if "weather" in lower:
         city="Kaza" if "kaza" in lower else ("Shimla" if "shimla" in lower else ("Kalpa" if "kalpa" in lower else "Kaza"))
         return {"reply":f"Current weather check for {city}: {await live_weather(city)}","live":True}
-    if "rafting" in lower or "shivpuri" in lower or "rishikesh" in lower:\n        return {"reply":"Rishikesh is added for 4–5 Dec 2026. Day 8: travel from Shimla to Rishikesh and explore the ghats/bridge area. Day 9: Shivpuri rafting only if the operator and authorities confirm it is running safely; winter water is cold, so use a licensed operator with fitted life jacket, helmet and safety briefing. The 9-day plan avoids combining a long mountain transfer with rafting. Check current permissions shortly before travel.","live":False}\n    if "chandratal" in lower or "kunzum" in lower:
+    if "rafting" in lower or "shivpuri" in lower or "rishikesh" in lower:
+        return {"reply":"Rishikesh is added for 4–5 Dec 2026. Day 8: travel from Shimla to Rishikesh and explore the ghats/bridge area. Day 9: Shivpuri rafting only if the operator and authorities confirm it is running safely; winter water is cold, so use a licensed operator with fitted life jacket, helmet and safety briefing. The 9-day plan avoids combining a long mountain transfer with rafting. Check current permissions shortly before travel.","live":False}\n    if "chandratal" in lower or "kunzum" in lower:
         return {"reply":"Chandratal is conditional for this trip. The planned date is 1 Dec 2026, but access depends on actual snow, Kunzum/road conditions and local authority/operator guidance. Do not treat the itinerary as a guarantee.","live":False}
     if "itinerary" in lower or "plan" in lower or "route" in lower:
         return {"reply":itinerary_text(),"live":False}

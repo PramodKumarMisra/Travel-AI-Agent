@@ -27,7 +27,7 @@ TRIP = {
 }
 
 def itinerary_text():
-    return "\\n".join(
+    return "\n".join(
         f"Day {x['day']} ({x['date']}): {x['route']} — ~{x['distance_km']} km"
         + (" [CONDITIONAL — verify locally]" if x.get("conditional") else "")
         for x in TRIP["itinerary"]
